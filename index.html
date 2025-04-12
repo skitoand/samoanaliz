@@ -1,38 +1,39 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Вопросы</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Личный кабинет</title>
+  <link rel="stylesheet" href="style.css">
   <style>
-    body { font-family: sans-serif; padding: 2rem; background: #f4f4f4; }
-    h1 { text-align: center; }
-    .container { max-width: 600px; margin: auto; background: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    select, button { font-size: 1rem; margin: 1rem 0; padding: 0.5rem; border-radius: 8px; border: 1px solid #ccc; width: 100%; }
-    .question { margin: 2rem 0; font-size: 1.2rem; }
-    .controls { display: flex; justify-content: space-between; }
-    .reset { margin-top: 1rem; background: #e74c3c; color: #fff; border: none; cursor: pointer; }
+    .container { max-width: 600px; margin: auto; padding: 2rem; background: #fff; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    h1 { font-size: 1.8rem; text-align: center; }
+    select { margin-top: 1rem; width: 100%; padding: 0.5rem; font-size: 1rem; border-radius: 8px; border: 1px solid #ccc; }
+    .progress { margin-top: 1.5rem; }
+    .question { font-size: 1.2rem; margin: 1rem 0; }
+    .controls { display: flex; justify-content: space-between; margin-top: 1rem; }
+    button { padding: 0.5rem 1rem; border: none; border-radius: 8px; background-color: #3498db; color: #fff; cursor: pointer; }
+    button:disabled { background-color: #ccc; cursor: not-allowed; }
+    .reset-btn { margin-top: 1rem; background-color: #e74c3c; }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Вопросы</h1>
+    <h1>Личный кабинет</h1>
     <select id="listSelect"></select>
-
-    <div class="question" id="questionText">Загрузка...</div>
-
-    <div class="controls">
-      <button onclick="prevQuestion()" id="prevBtn">Назад</button>
-      <button onclick="nextQuestion()" id="nextBtn">Вперёд</button>
+    <div class="progress">
+      <div class="question" id="questionText">Загрузка...</div>
+      <div class="controls">
+        <button onclick="prevQuestion()" id="prevBtn">Назад</button>
+        <button onclick="nextQuestion()" id="nextBtn">Вперёд</button>
+      </div>
+      <button class="reset-btn" onclick="resetProgress()">Сбросить прогресс</button>
     </div>
-
-    <button class="reset" onclick="resetProgress()">Сбросить прогресс</button>
   </div>
 
   <script src="questions.js"></script>
   <script>
-    const STORAGE_PREFIX = "progress_";
+    const STORAGE_PREFIX = 'userProgress_';
     let currentListName = "";
     let currentIndex = 0;
     let questions = [];
@@ -52,9 +53,9 @@
     }
 
     function updateUI() {
-      document.getElementById("questionText").textContent = questions[currentIndex];
-      document.getElementById("prevBtn").disabled = currentIndex === 0;
-      document.getElementById("nextBtn").disabled = currentIndex === questions.length - 1;
+      document.getElementById('questionText').textContent = questions[currentIndex];
+      document.getElementById('prevBtn').disabled = currentIndex === 0;
+      document.getElementById('nextBtn').disabled = currentIndex === questions.length - 1;
       saveProgress();
     }
 
@@ -73,15 +74,14 @@
     }
 
     function populateSelect() {
-      const select = document.getElementById("listSelect");
+      const select = document.getElementById('listSelect');
       Object.keys(lists).forEach((name) => {
-        const option = document.createElement("option");
+        const option = document.createElement('option');
         option.value = name;
         option.textContent = name;
         select.appendChild(option);
       });
-
-      select.addEventListener("change", () => {
+      select.addEventListener('change', () => {
         currentListName = select.value;
         questions = lists[currentListName];
         loadProgress(currentListName);
@@ -92,7 +92,7 @@
     window.onload = () => {
       populateSelect();
       const defaultList = Object.keys(lists)[0];
-      document.getElementById("listSelect").value = defaultList;
+      document.getElementById('listSelect').value = defaultList;
       currentListName = defaultList;
       questions = lists[currentListName];
       loadProgress(currentListName);

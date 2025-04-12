@@ -1,0 +1,82 @@
+
+body {
+  margin: 0;
+  font-family: sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+}
+:root {
+  --bg: #f3f7fc;
+  --card: #ffffff;
+  --text: #222;
+  --accent: #0077cc;
+  --header-bg: #0077cc;
+}
+body.dark {
+  --bg: #1e1e1e;
+  --card: #2a2a2a;
+  --text: #eee;
+  --accent: #66bfff;
+  --header-bg: #111;
+}
+header {
+  background-color: var(--header-bg);
+  color: white;
+  padding: 0.5rem 1rem;
+  text-align: center;
+  position: relative;
+}
+main {
+  padding: 1rem;
+}
+.card {
+  background: var(--card);
+  padding: 1rem;
+  border-radius: 1rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  margin-bottom: 1rem;
+}
+select, textarea, input[type="text"] {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  background-color: var(--bg);
+  color: var(--text);
+}
+.btn {
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  margin-top: 0.5rem;
+  cursor: pointer;
+}
+.btn:hover {
+  opacity: 0.9;
+}
+.progress {
+  height: 16px;
+  background: #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+.progress-bar {
+  height: 100%;
+  background: var(--accent);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+.toggle-dark {
+  position: absolute;
+  right: 1rem;
+  top: 0.5rem;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.2rem;
+  cursor: pointer;
+}

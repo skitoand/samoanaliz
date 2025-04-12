@@ -31,6 +31,7 @@
     <div class="card" id="insight-block" style="display:none;">
       <label for="insight">Запишите озарение:</label>
       <textarea id="insight" rows="3" placeholder="Что вы осознали?"></textarea>
+      <button class="btn" style="margin-top: 1rem;" onclick="resetProgress()">Сбросить прогресс</button>
     </div>
   </main>
   <script src="questions.js"></script>
@@ -61,6 +62,15 @@
 
     function saveProgress() {
       localStorage.setItem(STORAGE_KEY_PREFIX + listName, current);
+    }
+
+    function resetProgress() {
+      if (listName) {
+        localStorage.removeItem(STORAGE_KEY_PREFIX + listName);
+        alert('Прогресс сброшен. Начните заново.');
+        current = 0;
+        showQuestion();
+      }
     }
 
     function startSession() {

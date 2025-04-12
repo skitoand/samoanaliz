@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Самоанализ — Онлайн-практика</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .btn-reset {
+      background-color: #c0392b;
+      color: white;
+      margin-left: 0.5rem;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -15,7 +22,10 @@
     <div class="card">
       <label for="list-select">Выберите список:</label>
       <select id="list-select"></select>
-      <button class="btn" onclick="startSession()">Начать</button>
+      <div style="margin-top: 0.5rem;">
+        <button class="btn" onclick="startSession()">Начать</button>
+        <button class="btn btn-reset" onclick="resetProgress()">Сбросить прогресс</button>
+      </div>
     </div>
     <div class="card" id="session-block" style="display:none;">
       <div id="progress-text"></div>
@@ -31,7 +41,6 @@
     <div class="card" id="insight-block" style="display:none;">
       <label for="insight">Запишите озарение:</label>
       <textarea id="insight" rows="3" placeholder="Что вы осознали?"></textarea>
-      <button class="btn" style="margin-top: 1rem;" onclick="resetProgress()">Сбросить прогресс</button>
     </div>
   </main>
   <script src="questions.js"></script>
@@ -65,10 +74,11 @@
     }
 
     function resetProgress() {
-      if (listName) {
-        localStorage.removeItem(STORAGE_KEY_PREFIX + listName);
-        alert('Прогресс сброшен. Начните заново.');
+      const key = STORAGE_KEY_PREFIX + listSelect.value;
+      localStorage.removeItem(key);
+      if (listName === listSelect.value) {
         current = 0;
+        channelIndex = 0;
         showQuestion();
       }
     }

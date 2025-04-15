@@ -3,407 +3,138 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Управление финансами</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-  // Глобальные переменные и данные
-  let currentRecordType = 'income';
-  let editingRow = null;
-  let currentChartPeriod = 'day';
-  let incomeChart = null;
-  let expensesChart = null;
-
-  const categories = {
-    income: ['Зарплата', 'Фриланс', 'Подарок', 'Инвестиции'],
-    expenses: ['Продукты', 'Транспорт', 'Аренда', 'Коммунальные', 'Развлечения']
-  };
-
-  function showTab(tab) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.getElementById(`${tab}-tab`).classList.add('active');
-    currentRecordType = tab;
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    showTab('income');
-    loadTestData();
-    updateFilters('income');
-    updateFilters('expenses');
-    initCharts();
-  });
-
-  function loadTestData() {
-    const testData = {
-      income: [
-        { date: '2023-01-01', amount: 50000, category: 'Зарплата', account: 'Карта', user: 'Андрей', comment: 'Январская зарплата' },
-        { date: '2023-01-15', amount: 20000, category: 'Фриланс', account: 'Карта', user: 'Андрей', comment: 'Проект X' }
-      ],
-      expenses: [
-        { date: '2023-01-05', amount: 15000, category: 'Продукты', account: 'Карта', user: 'Мария', comment: 'Продукты на неделю' },
-        { date: '2023-01-12', amount: 20000, category: 'Аренда', account: 'Карта', user: 'Мария', comment: 'Аренда квартиры' }
-      ]
-    };
-    testData.income.forEach(record => {
-      addTableRow('income', {
-        ...record,
-        week: getWeekNumber(record.date),
-        month: getMonthName(record.date)
-      });
-    });
-    testData.expenses.forEach(record => {
-      addTableRow('expenses', {
-        ...record,
-        week: getWeekNumber(record.date),
-        month: getMonthName(record.date)
-      });
-    });
-    updateTotal('income');
-    updateTotal('expenses');
-  }
-</script>
+  <title>Самоанализ — Онлайн-практика</title>
+  <link rel="stylesheet" href="style.css">
   <style>
-    :root {
-      --bg-color: #1a1a1a;
-      --text-color: #f0f0f0;
-      --primary-color: #4a90e2;
-      --secondary-color: #2d2d2d;
-      --table-header-bg: #333;
-      --table-border: #444;
-      --input-bg: #2d2d2d;
-      --input-border: #555;
-      --popup-bg: #2d2d2d;
-      --overlay-bg: rgba(0, 0, 0, 0.7);
-    }
-
-    .light-theme {
-      --bg-color: #f4f9ff;
-      --text-color: #333;
-      --primary-color: #007BFF;
-      --secondary-color: #dbeeff;
-      --table-header-bg: #dbeeff;
-      --table-border: #007BFF;
-      --input-bg: white;
-      --input-border: #ccc;
-      --popup-bg: white;
-      --overlay-bg: rgba(0, 0, 0, 0.5);
-    }
-
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      transition: all 0.3s ease;
-      position: relative;
-    }
-
-    .theme-switcher {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .tabs, .actions {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-    }
-
-    button, select, input[type="date"] {
-      padding: 10px 20px;
-      border: 1px solid var(--primary-color);
-      background: var(--input-bg);
-      cursor: pointer;
-      border-radius: 6px;
-      color: var(--primary-color);
-      font-weight: bold;
-      transition: all 0.3s;
-    }
-
-    button:hover {
-      background-color: var(--primary-color);
+    .btn-reset {
+      background-color: #c0392b;
       color: white;
-    }
-
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-bottom: 20px;
-    }
-
-    th, td {
-      border: 1px solid var(--table-border);
-      padding: 8px;
-      text-align: center;
-    }
-
-    th {
-      background: var(--table-header-bg);
-    }
-
-    .popup {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: var(--popup-bg);
-      border: 2px solid var(--primary-color);
-      padding: 20px;
-      z-index: 10;
-      border-radius: 10px;
-      width: 300px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-
-    .popup input, .popup select, .popup textarea {
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 8px;
-      border: 1px solid var(--input-border);
-      border-radius: 4px;
-      background-color: var(--input-bg);
-      color: var(--text-color);
-    }
-
-    .overlay {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: var(--overlay-bg);
-      z-index: 5;
-    }
-
-    .tab-content {
-      display: none;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    .status-summary {
-      margin-top: 10px;
-      font-weight: bold;
+      margin-left: 0.5rem;
     }
   </style>
 </head>
 <body>
-  <!-- Панель темы и вкладки -->
-  <div class="theme-switcher">...</div>
-  <div class="tabs">
-    <button onclick="showTab('income')">Доходы</button>
-    <button onclick="showTab('expenses')">Расходы</button>
-    <button onclick="showTab('requests')">Заявки</button>
-  </div>
-
-  <!-- Вкладка Доходы -->
-<div class="tab-content" id="income-tab">
-  <div class="actions">
-    <button onclick="openForm('income')">+ Добавить</button>
-    <button onclick="deleteSelected('income')">Удалить</button>
-    <button onclick="editSelected('income')">Редактировать</button>
-    <input type="date" id="filter-start" onchange="filterTable('income')">
-    <input type="date" id="filter-end" onchange="filterTable('income')">
-    <select id="filter-week" onchange="filterTable('income')">
-      <option value="">Все недели</option>
-    </select>
-    <select id="filter-month" onchange="filterTable('income')">
-      <option value="">Все месяцы</option>
-    </select>
-  </div>
-  <table id="income-table">
-    <thead>
-      <tr>
-        <th><input type="checkbox" onclick="toggleAllCheckboxes('income')"></th>
-        <th>Дата</th><th>Неделя</th><th>Месяц</th><th>Сумма</th><th>Источник</th><th>Счет</th><th>Пользователь</th><th>Комментарий</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-    <tfoot>
-      <tr><td colspan="4">Итого:</td><td id="income-total">0</td><td colspan="4"></td></tr>
-    </tfoot>
-  </table>
-</div>
-
-<!-- Вкладка Расходы -->
-<div class="tab-content" id="expenses-tab">
-  <div class="actions">
-    <button onclick="openForm('expenses')">+ Добавить</button>
-    <button onclick="deleteSelected('expenses')">Удалить</button>
-    <button onclick="editSelected('expenses')">Редактировать</button>
-    <input type="date" id="expense-filter-start" onchange="filterTable('expenses')">
-    <input type="date" id="expense-filter-end" onchange="filterTable('expenses')">
-    <select id="expense-filter-week" onchange="filterTable('expenses')">
-      <option value="">Все недели</option>
-    </select>
-    <select id="expense-filter-month" onchange="filterTable('expenses')">
-      <option value="">Все месяцы</option>
-    </select>
-  </div>
-  <table id="expenses-table">
-    <thead>
-      <tr>
-        <th><input type="checkbox" onclick="toggleAllCheckboxes('expenses')"></th>
-        <th>Дата</th><th>Неделя</th><th>Месяц</th><th>Сумма</th><th>Статья расходов</th><th>Счет</th><th>Пользователь</th><th>Комментарий</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-    <tfoot>
-      <tr><td colspan="4">Итого:</td><td id="expenses-total">0</td><td colspan="4"></td></tr>
-    </tfoot>
-  </table>
-</div>
-
-  <!-- Вкладка Заявки -->
-  <div class="tab-content" id="requests-tab">
-    <div class="actions">
-      <button onclick="openRequestForm()">+ Новая заявка</button>
+  <header>
+    <h1 style="margin: 0; font-size: 1.2rem;">Самоанализ</h1>
+    <button class="toggle-dark" onclick="toggleDarkMode()">🌙</button>
+  </header>
+  <main>
+    <div class="card">
+      <label for="list-select">Выберите список:</label>
+      <select id="list-select"></select>
+      <div style="margin-top: 0.5rem;">
+        <button class="btn" onclick="startSession()">Начать</button>
+        <button class="btn btn-reset" onclick="resetProgress()">Сбросить прогресс</button>
+      </div>
     </div>
-    <table id="requests-table">
-      <thead>
-        <tr>
-          <th>Дата заявки</th>
-          <th>Плановая дата</th>
-          <th>Сумма</th>
-          <th>Статья</th>
-          <th>Пользователь</th>
-          <th>Цель</th>
-          <th>Статус</th>
-          <th>Действия</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-    <div class="status-summary" id="status-summary"></div>
-  </div>
-
-  <!-- Popup для новой заявки -->
-  <div class="popup" id="request-popup">
-    <h3>Новая заявка</h3>
-    <input type="date" id="req-date">
-    <input type="date" id="req-plan-date">
-    <input type="number" id="req-amount" placeholder="Сумма">
-    <select id="req-category"></select>
-    <select id="req-user">
-      <option>Андрей</option>
-      <option>Мария</option>
-    </select>
-    <textarea id="req-purpose" placeholder="Цель/обоснование"></textarea>
-    <select id="req-status">
-      <option>Черновик</option>
-      <option>Ожидает одобрения</option>
-      <option>Одобрено</option>
-      <option>Отклонено</option>
-    </select>
-    <button onclick="saveRequest()">Сохранить</button>
-    <button onclick="closePopup()">Отмена</button>
-  </div>
-  <div class="overlay" onclick="closePopup()"></div>
-
+    <div class="card" id="session-block" style="display:none;">
+      <div id="progress-text"></div>
+      <div class="progress"><div id="progress-bar" class="progress-bar"></div></div>
+      <div id="question"></div>
+      <div id="perception"></div>
+      <button class="btn" onclick="showExtra(1)">Далее</button>
+      <div id="extra1" style="display:none; margin-top: 1rem;"></div>
+      <button class="btn" id="btn-extra2" style="display:none;" onclick="showExtra(2)">Далее</button>
+      <div id="extra2" style="display:none; margin-top: 1rem;"></div>
+      <button class="btn" id="next-btn" style="display:none;" onclick="nextQuestion()">Следующий вопрос</button>
+    </div>
+    <div class="card" id="insight-block" style="display:none;">
+      <label for="insight">Запишите озарение:</label>
+      <textarea id="insight" rows="3" placeholder="Что вы осознали?"></textarea>
+    </div>
+  </main>
+  <script src="questions.js"></script>
   <script>
-    // Вся твоя логика из <script> блока сохраняется полностью (включая графики, фильтры и т.п.)
-    // Ниже — дополнения для блока "Заявки"
+    const perceptionChannels = [
+      "Зрение", "Запах", "Осязание", "Цвет", "Интонация", "Внешнее движение",
+      "Эмоция", "Громкость", "Положение тела", "Звук", "Вес", "Собственное движение"
+    ];
 
-    const requests = [];
+    const STORAGE_KEY_PREFIX = 'selfanalysis_';
+    const listSelect = document.getElementById('list-select');
+    Object.keys(lists).forEach(title => {
+      const opt = document.createElement('option');
+      opt.value = title;
+      opt.innerText = title;
+      listSelect.appendChild(opt);
+    });
 
-    function openRequestForm() {
-      document.getElementById('request-popup').style.display = 'block';
-      document.querySelector('.overlay').style.display = 'block';
-      document.getElementById('req-date').valueAsDate = new Date();
-      document.getElementById('req-plan-date').valueAsDate = new Date();
-      const categorySelect = document.getElementById('req-category');
-      categorySelect.innerHTML = '';
-      categories.expenses.forEach(c => {
-        const opt = document.createElement('option');
-        opt.value = c;
-        opt.textContent = c;
-        categorySelect.appendChild(opt);
-      });
+    let currentList = [], listName = '', current = 0, channelIndex = 0;
+
+    function loadProgress() {
+      const saved = localStorage.getItem(STORAGE_KEY_PREFIX + listName);
+      if (saved) {
+        const parsed = parseInt(saved);
+        if (!isNaN(parsed)) current = parsed;
+      }
     }
 
-    function closePopup() {
-      document.getElementById('request-popup').style.display = 'none';
-      document.querySelector('.overlay').style.display = 'none';
+    function saveProgress() {
+      localStorage.setItem(STORAGE_KEY_PREFIX + listName, current);
     }
 
-    function saveRequest() {
-      const request = {
-        date: document.getElementById('req-date').value,
-        planDate: document.getElementById('req-plan-date').value,
-        amount: parseInt(document.getElementById('req-amount').value),
-        category: document.getElementById('req-category').value,
-        user: document.getElementById('req-user').value,
-        purpose: document.getElementById('req-purpose').value,
-        status: document.getElementById('req-status').value
-      };
-      requests.push(request);
-      renderRequests();
-      closePopup();
+    function resetProgress() {
+      const key = STORAGE_KEY_PREFIX + listSelect.value;
+      localStorage.removeItem(key);
+      if (listName === listSelect.value) {
+        current = 0;
+        channelIndex = 0;
+        showQuestion();
+      }
     }
 
-    function renderRequests() {
-      const tbody = document.querySelector('#requests-table tbody');
-      tbody.innerHTML = '';
-      const statusCount = {};
-      requests.forEach((r, i) => {
-        if (!statusCount[r.status]) statusCount[r.status] = 0;
-        statusCount[r.status]++;
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${r.date}</td>
-          <td>${r.planDate}</td>
-          <td>${r.amount}</td>
-          <td>${r.category}</td>
-          <td>${r.user}</td>
-          <td>${r.purpose}</td>
-          <td>${r.status}</td>
-          <td>
-            <button onclick="approveRequest(${i})">✅</button>
-            <button onclick="rejectRequest(${i})">❌</button>
-            <button onclick="createExpenseFromRequest(${i})">💰</button>
-          </td>`;
-        tbody.appendChild(tr);
-      });
-      const summary = Object.entries(statusCount).map(([k,v]) => `${k}: ${v}`).join(' | ');
-      document.getElementById('status-summary').textContent = `Всего: ${requests.length} | ${summary}`;
+    function startSession() {
+      listName = listSelect.value;
+      currentList = lists[listName];
+      current = 0;
+      channelIndex = 0;
+      loadProgress();
+      document.getElementById('session-block').style.display = 'block';
+      document.getElementById('insight-block').style.display = 'block';
+      showQuestion();
     }
 
-    function approveRequest(index) {
-      requests[index].status = 'Одобрено';
-      renderRequests();
+    function showQuestion() {
+      const q = currentList[current];
+      const ch = perceptionChannels[channelIndex % perceptionChannels.length];
+      document.getElementById('question').innerText = `Вопрос: ${q}`;
+      document.getElementById('perception').innerText = `Обратите внимание на: ${ch}`;
+      document.getElementById('extra1').style.display = 'none';
+      document.getElementById('btn-extra2').style.display = 'none';
+      document.getElementById('extra2').style.display = 'none';
+      document.getElementById('next-btn').style.display = 'none';
+      updateProgress();
+      saveProgress();
     }
 
-    function rejectRequest(index) {
-      requests[index].status = 'Отклонено';
-      renderRequests();
+    function showExtra(step) {
+      if (step === 1) {
+        document.getElementById('extra1').innerText = 'Вспомните ещё один случай на эту тему.';
+        document.getElementById('extra1').style.display = 'block';
+        document.getElementById('btn-extra2').style.display = 'inline-block';
+      }
+      if (step === 2) {
+        document.getElementById('extra2').innerText = 'Вспомните самый ранний случай.';
+        document.getElementById('extra2').style.display = 'block';
+        document.getElementById('next-btn').style.display = 'inline-block';
+      }
     }
 
-    function createExpenseFromRequest(index) {
-      const r = requests[index];
-      if (r.status !== 'Одобрено') return alert('Сначала одобрите заявку');
-      const record = {
-        date: r.planDate,
-        week: getWeekNumber(r.planDate),
-        month: getMonthName(r.planDate),
-        amount: r.amount,
-        category: r.category,
-        account: 'Карта',
-        user: r.user,
-        comment: r.purpose
-      };
-      addTableRow('expenses', record);
-      updateTotal('expenses');
-      updateFilters('expenses');
-      updateChart('expenses');
+    function nextQuestion() {
+      current++;
+      channelIndex++;
+      if (current >= currentList.length) current = 0;
+      showQuestion();
+    }
+
+    function updateProgress() {
+      const percent = (current / currentList.length) * 100;
+      document.getElementById('progress-bar').style.width = percent + '%';
+      document.getElementById('progress-text').innerText = `Вопрос ${current + 1} из ${currentList.length}`;
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark');
     }
   </script>
 </body>
